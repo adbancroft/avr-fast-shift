@@ -8,16 +8,6 @@
 #include <sys/time.h>
 #endif
 
-#if !defined(MILLIS_PER_SEC)
-#define MILLIS_PER_SEC 1000ULL
-#endif
-#if !defined(MICROS_PER_SEC)
-#define MICROS_PER_SEC (MILLIS_PER_SEC*1000)
-#endif
-#if !defined(NANOS_PER_SEC)
-#define NANOS_PER_SEC (MICROS_PER_SEC*1000)
-#endif
-
 class simple_timer_t {
 private:
 #if defined(__AVR__)
@@ -34,7 +24,7 @@ public:
 #if defined(__AVR__)
         start_time = micros();
 #else 
-        gettimeofday(&start_time, NULL);
+        gettimeofday(&start_time, nullptr);
 #endif
     }
 
@@ -42,7 +32,7 @@ public:
 #if defined(__AVR__)
         end_time = micros();
 #else 
-        gettimeofday(&end_time, NULL);
+        gettimeofday(&end_time, nullptr);
 #endif        
     }
 
@@ -50,6 +40,8 @@ public:
 #if defined(__AVR__)
         return end_time-start_time;
 #else 
+        static constexpr unsigned long long MILLIS_PER_SEC = 1000ULL;
+        static constexpr unsigned long long MICROS_PER_SEC = MILLIS_PER_SEC*1000U;
         return (uint32_t)(((end_time.tv_sec - start_time.tv_sec) * MICROS_PER_SEC) + (end_time.tv_usec - start_time.tv_usec));
 #endif 
     }

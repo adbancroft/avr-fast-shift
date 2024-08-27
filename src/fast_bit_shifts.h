@@ -28,15 +28,13 @@
 /// @{
     
 /// @brief Preprocessor flag to turn on optimized shifts.
-/// If not set eternally, will be automatically set to 1 for GCC on AVR.
-/// @note This is not a configurable option, it's a compile time flag.
+/// If not set eternally, will be automatically set for GCC on AVR.
 #if !defined(USE_OPTIMIZED_SHIFTS)
 #if (defined(__GNUC__) && defined(__AVR__)) || defined(DOXYGEN_DOCUMENTATION_BUILD)
-#define USE_OPTIMIZED_SHIFTS 1
-#else
-#define USE_OPTIMIZED_SHIFTS 0
+#define USE_OPTIMIZED_SHIFTS
 #endif
 #endif
+
 
 /// @brief Bitwise left shift - generic, unoptimized, case 
 /// 
@@ -45,7 +43,7 @@
 /// @return uint32_t a<<b
 template <uint8_t b> 
 static inline uint32_t lshift(uint32_t a) { 
-#if USE_OPTIMIZED_SHIFTS==1
+#if defined(USE_OPTIMIZED_SHIFTS)
     // The shifts below have been validated to produce performant code in GCC. 
     // Other shift amounts are either in a specialized template below (good) or are unvalidated (bad).
     static_assert(b==1 || b==2 || b==3 || b==8 || b==16 || b==24 || b==32,
@@ -54,7 +52,7 @@ static inline uint32_t lshift(uint32_t a) {
     return a << b; 
 }
 
-#if USE_OPTIMIZED_SHIFTS==1
+#if defined(USE_OPTIMIZED_SHIFTS)
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
@@ -346,7 +344,8 @@ uint32_t lshift<15U>(uint32_t a)
 /// @return uint32_t a>>b
 template <uint8_t b> 
 static inline uint32_t rshift(uint32_t a) { 
-#if USE_OPTIMIZED_SHIFTS==1    // The shifts below have been validated to produce performant code in GCC. 
+#if defined(USE_OPTIMIZED_SHIFTS)
+    // The shifts below have been validated to produce performant code in GCC. 
     // Other shift amounts are either in a specialized template below (good) or are unvalidated (bad).
     static_assert(b==1 || b==2 || b==8 || b==16 || b==24,
                   "Unvalidated shift - confirm gcc produces performant code");
@@ -354,7 +353,7 @@ static inline uint32_t rshift(uint32_t a) {
     return a >> b; 
 }
 
-#if USE_OPTIMIZED_SHIFTS==1
+#if defined(USE_OPTIMIZED_SHIFTS)
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"

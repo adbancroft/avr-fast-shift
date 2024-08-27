@@ -1,5 +1,3 @@
-// #define UNITY_EXCLUDE_DETAILS
-
 #include <Arduino.h>
 #include <unity.h>
 #include "fast_bit_shifts.h"
@@ -60,7 +58,7 @@ void test_RShift()
     test_rshift<15U>();
 }
 
-#if USE_OPTIMIZED_SHIFTS==1
+#if defined(USE_OPTIMIZED_SHIFTS)
 
 static uint32_t seedValue;
 
@@ -117,7 +115,7 @@ static void __attribute__((noinline)) optimizedTestLShift(uint8_t index, uint32_
 #endif 
 
 static void test_rshift_perf(void) {
-#if USE_OPTIMIZED_SHIFTS==1
+#if defined(USE_OPTIMIZED_SHIFTS)
     seedValue = rand();
 
     auto comparison = compare_executiontime<uint8_t, uint32_t>(iters, start_index, end_index, step, nativeTestRShift, optimizedTestRShift);
@@ -131,8 +129,8 @@ static void test_rshift_perf(void) {
 
 
 static void test_lshift_perf(void) {
-#if USE_OPTIMIZED_SHIFTS==1
-seedValue = rand();
+#if defined(USE_OPTIMIZED_SHIFTS)
+    seedValue = rand();
 
     auto comparison = compare_executiontime<uint8_t, uint32_t>(iters, start_index, end_index, step, nativeTestLShift, optimizedTestLShift);
     
