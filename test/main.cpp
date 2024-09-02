@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <unity.h>
-#include "fast_bit_shifts.h"
+#include <avr/sleep.h>
+#include "avr-fast-shift.h"
 #include "lambda_timer.hpp"
 #include "unity_print_timers.hpp"
 
@@ -156,6 +157,11 @@ void setup()
     RUN_TEST(test_rshift_perf);
     RUN_TEST(test_lshift_perf);
     UNITY_END(); 
+
+    // Tell SimAVR we are done
+    cli();
+    sleep_enable();
+    sleep_cpu();    
 }
 
 void loop()
