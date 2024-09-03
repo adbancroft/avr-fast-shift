@@ -14,7 +14,13 @@ See timing unit tests.
 
 ## Using the library
 
-1. `#include "fast_bit_shifts.h"`
+### Installation
+The library is available in both the [Arduino Library](https://www.arduino.cc/reference/en/libraries/avr-fast-shift/) and [PlatformIO Library](https://registry.platformio.org/libraries/adbancroft/avr-fast-shift) registries. 
+
+The library can also be cloned & included locally or included directly from GitHub (if your tooling supports it). 
+
+### Code
+1. `#include <avr-fast-shift.h>`
 2. Replace all 32-bit shift operations that use a compile time constant shift distance with the equivalent shift function. I.e.
     * `a >> b` -> `rshift<b>(a)`
     * `a << b` -> `lshift<b>(a)`
