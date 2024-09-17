@@ -149,7 +149,9 @@ void setup()
 
     // NOTE!!! Wait for >2 secs
     // if board doesn't support software reset via Serial.DTR/RTS
+#if !defined(SIMULATOR)
     delay(2000);
+#endif
 
     UNITY_BEGIN(); 
     RUN_TEST(test_LShift);
@@ -159,9 +161,11 @@ void setup()
     UNITY_END(); 
 
     // Tell SimAVR we are done
+#if defined(SIMULATOR)    
     cli();
     sleep_enable();
     sleep_cpu();    
+#endif    
 }
 
 void loop()
