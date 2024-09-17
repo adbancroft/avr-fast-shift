@@ -8,8 +8,8 @@
 static uint32_t seedValue;
 
 // Forward declarations
-void nativeTestRShift(uint8_t index, uint32_t & checkSum);
-void optimizedTestRShift(uint8_t index, uint32_t & checkSum);
+static void nativeTestRShift(uint8_t index, uint32_t & checkSum);
+static void optimizedTestRShift(uint8_t index, uint32_t & checkSum);
 
 void setup() {
   Serial.begin(9600);   //send and receive at 9600 baud  
@@ -19,16 +19,15 @@ void setup() {
 
   Serial.println("Beginning test...");
 
-constexpr uint16_t iters = 128;
-constexpr uint8_t start_index = 1;
-constexpr uint8_t end_index = 16;
-constexpr uint8_t step = 1;
+  constexpr uint16_t iters = 128;
+  constexpr uint8_t start_index = 1;
+  constexpr uint8_t end_index = 16;
+//   constexpr uint8_t step = 1;
 
+//   const uint32_t divisor = random(2U, UINT16_MAX/2U);
+//   const uint32_t dividend = random((uint32_t)UINT16_MAX+1U, (uint32_t)UINT16_MAX*24U);
 
-  const uint32_t divisor = random(2U, UINT16_MAX/2U);
-  const uint32_t dividend = random((uint32_t)UINT16_MAX+1U, (uint32_t)UINT16_MAX*24U);
-
-  constexpr uint32_t iterations = 5000;
+//   constexpr uint32_t iterations = 5000;
 
   // Built in "/" operator
   uint32_t shiftCheckSum = 0UL;
@@ -53,12 +52,12 @@ constexpr uint8_t step = 1;
   uint32_t fastShiftDuration = fastShiftEndTime-fastShiftStartTime;
 
   char msg[128];
-  sprintf(msg, "Shift Checksum: %" PRIu32 ", fast_shift Checksum: %" PRIu32, shiftCheckSum, fastShiftCheckSum);
+  snprintf(msg, sizeof(msg)-1, "Shift Checksum: %" PRIu32 ", fast_shift Checksum: %" PRIu32, shiftCheckSum, fastShiftCheckSum);
   Serial.println(msg);
-  sprintf(msg, "Shift Duration: %" PRIu32 ", fast_shift Duration: %" PRIu32, shiftDuration, fastShiftDuration);
+  snprintf(msg, sizeof(msg)-1, "Shift Duration: %" PRIu32 ", fast_shift Duration: %" PRIu32, shiftDuration, fastShiftDuration);
   Serial.println(msg);
-  uint16_t percentDelta = fastShiftDuration * 100U / shiftDuration;
-  sprintf(msg, "fast_shift() took %" PRIu16 "%% less time than the shift operator", 100-percentDelta);
+  uint16_t percentDelta = (uint16_t)((fastShiftDuration * 100U) / shiftDuration);
+  snprintf(msg, sizeof(msg)-1, "fast_shift() took %" PRIu16 "%% less time than the shift operator", 100-percentDelta);
   Serial.println(msg);
 }
 
