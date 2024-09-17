@@ -22,12 +22,6 @@ void setup() {
   constexpr uint16_t iters = 128;
   constexpr uint8_t start_index = 1;
   constexpr uint8_t end_index = 16;
-//   constexpr uint8_t step = 1;
-
-//   const uint32_t divisor = random(2U, UINT16_MAX/2U);
-//   const uint32_t dividend = random((uint32_t)UINT16_MAX+1U, (uint32_t)UINT16_MAX*24U);
-
-//   constexpr uint32_t iterations = 5000;
 
   // Built in "/" operator
   uint32_t shiftCheckSum = 0UL;
