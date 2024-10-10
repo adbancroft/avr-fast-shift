@@ -1,3 +1,8 @@
+[![Build](https://github.com/adbancroft/avr-fast-shift/actions/workflows/build.yml/badge.svg)](https://github.com/adbancroft/avr-fast-shift/actions/workflows/build.yml)
+[![Unit Tests](https://github.com/adbancroft/avr-fast-shift/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/adbancroft/avr-fast-shift/actions/workflows/unit-tests.yml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=adbancroft_avr-fast-shift&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=adbancroft_avr-fast-shift)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=adbancroft_avr-fast-shift&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=adbancroft_avr-fast-shift)
+
 # avr-fast-shift: optimized 32-bit shifting for avr-gcc
 
 As of AVR-GCC 14.2.0, the code produced for unsigned 32-bit shifts with a *compile time shift distance* is very poor when using -O2 or -O3. E.g.
