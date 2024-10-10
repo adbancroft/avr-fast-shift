@@ -59,12 +59,13 @@ void test_RShift()
     test_rshift<15U>();
 }
 
-#if defined(USE_OPTIMIZED_SHIFTS)
+#if defined(AFS_USE_OPTIMIZED_SHIFTS)
 
 static uint32_t seedValue;
+static uint8_t shiftDistance;
 
-constexpr uint16_t iters = 128;
-constexpr uint8_t start_index = 1;
+constexpr uint16_t iters = 1024;
+constexpr uint8_t start_index = 0;
 constexpr uint8_t end_index = 16;
 constexpr uint8_t step = 1;
 
@@ -73,50 +74,54 @@ constexpr uint8_t step = 1;
 //
 // So we are comparing apples-to-apples
 
-#define PERF_NATIVE_SHIFT(distance, op) if (index==(distance)) { checkSum += checkSum op (distance); }
-#define PERF_NATIVE_RSHIFT(distance) PERF_NATIVE_SHIFT((distance), >>)
-#define PERF_NATIVE_LSHIFT(distance) PERF_NATIVE_SHIFT((distance), <<)
+#define PERF_NATIVE_SHIFT(index, distance, op) if ((index)==(distance)) { checkSum += checkSum op (distance); }
+#define PERF_NATIVE_RSHIFT(index, distance) PERF_NATIVE_SHIFT((index), (distance), >>)
+#define PERF_NATIVE_LSHIFT(index, distance) PERF_NATIVE_SHIFT((index), (distance), <<)
 
-#define PERF_OPTIMIZED_SHIFT(distance, op) if (index==(distance)) { checkSum += op<distance>(checkSum); }
-#define PERF_OPTIMIZED_RSHIFT(distance) PERF_OPTIMIZED_SHIFT((distance), rshift)
-#define PERF_OPTIMIZED_LSHIFT(distance) PERF_OPTIMIZED_SHIFT((distance), lshift)
+#define PERF_OPTIMIZED_SHIFT(index, distance, op) if ((index)==(distance)) { checkSum += op<distance>(checkSum); }
+#define PERF_OPTIMIZED_RSHIFT(index, distance) PERF_OPTIMIZED_SHIFT((index), (distance), rshift)
+#define PERF_OPTIMIZED_LSHIFT(index, distance) PERF_OPTIMIZED_SHIFT((index), (distance), lshift)
 
+// Randomness here is all about ensuring that the compiler doesn't optimize away the shifts
+// (which it won't do in normal operaton when the shift value is unknown at compile time.)
 #define PERF_TEST_FUN_BODY(shift_op) \
-    if (index==1U && checkSum==0U) { checkSum = seedValue; } \
-    shift_op(4U) \
-    shift_op(5U) \
-    shift_op(6U) \
-    shift_op(7U) \
-    shift_op(9U) \
-    shift_op(10U) \
-    shift_op(11U) \
-    shift_op(12U) \
-    shift_op(13U) \
-    shift_op(14U) \
-    shift_op(15U) \
+    if (index==0U) { \
+        if (checkSum==0U) { checkSum = seedValue; randomSeed(seedValue); } \
+        shiftDistance = (uint8_t)random(1, 16); \
+    } else { \
+        shift_op(shiftDistance, 4U) \
+        shift_op(shiftDistance, 5U) \
+        shift_op(shiftDistance, 6U) \
+        shift_op(shiftDistance, 7U) \
+        shift_op(shiftDistance, 9U) \
+        shift_op(shiftDistance, 10U) \
+        shift_op(shiftDistance, 11U) \
+        shift_op(shiftDistance, 12U) \
+        shift_op(shiftDistance, 13U) \
+        shift_op(shiftDistance, 14U) \
+        shift_op(shiftDistance, 15U) \
+    }
 
-// Force no inline, or compiler will optimize shifts away 
-// (which it won't do in normal operaton when the left shift operand is unknown at compile time.)
-static void __attribute__((noinline)) nativeTestRShift(uint8_t index, uint32_t &checkSum) { 
+static void nativeTestRShift(uint8_t index, uint32_t &checkSum) { 
     PERF_TEST_FUN_BODY(PERF_NATIVE_RSHIFT)
 };
 
-static void __attribute__((noinline)) optimizedTestRShift(uint8_t index, uint32_t &checkSum) {
+static void optimizedTestRShift(uint8_t index, uint32_t &checkSum) {
     PERF_TEST_FUN_BODY(PERF_OPTIMIZED_RSHIFT)
 };
 
-static void __attribute__((noinline)) nativeTestLShift(uint8_t index, uint32_t &checkSum) { 
+static void nativeTestLShift(uint8_t index, uint32_t &checkSum) { 
     PERF_TEST_FUN_BODY(PERF_NATIVE_LSHIFT)
 };
 
-static void __attribute__((noinline)) optimizedTestLShift(uint8_t index, uint32_t &checkSum) {
+static void optimizedTestLShift(uint8_t index, uint32_t &checkSum) {
     PERF_TEST_FUN_BODY(PERF_OPTIMIZED_LSHIFT)
 };
 
 #endif 
 
 static void test_rshift_perf(void) {
-#if defined(USE_OPTIMIZED_SHIFTS)
+#if defined(AFS_USE_OPTIMIZED_SHIFTS)
     seedValue = rand();
 
     auto comparison = compare_executiontime<uint8_t, uint32_t>(iters, start_index, end_index, step, nativeTestRShift, optimizedTestRShift);
@@ -130,7 +135,7 @@ static void test_rshift_perf(void) {
 
 
 static void test_lshift_perf(void) {
-#if defined(USE_OPTIMIZED_SHIFTS)
+#if defined(AFS_USE_OPTIMIZED_SHIFTS)
     seedValue = rand();
 
     auto comparison = compare_executiontime<uint8_t, uint32_t>(iters, start_index, end_index, step, nativeTestLShift, optimizedTestLShift);
@@ -142,6 +147,72 @@ static void test_lshift_perf(void) {
 #endif
 }
 
+// The macros below are used to ensure the performance test functions
+// have the same number of operations
+//
+// So we are comparing apples-to-apples
+
+#if defined(AFS_USE_OPTIMIZED_SHIFTS)
+
+#define PERF_RT_NATIVE_RSHIFT(checkSum, shiftDistance) (checkSum) += (checkSum) >> (shiftDistance);
+#define PERF_RT_NATIVE_LSHIFT(checkSum, shiftDistance) (checkSum) += (checkSum) << (shiftDistance);
+
+#define PERF_RT_OPTIMIZED_RSHIFT(checkSum, shiftDistance) (checkSum) += rshift((checkSum), (shiftDistance));
+#define PERF_RT_OPTIMIZED_LSHIFT(checkSum, shiftDistance) (checkSum) += lshift((checkSum), (shiftDistance));
+
+// Randomness here is all about ensuring that the compiler doesn't optimize away the shifts
+// (which it won't do in normal operaton when the shift operands are unknown at compile time.)
+#define PERF_RT_TEST_FUN_BODY(shift_op) \
+    if (index==0U) { \
+        if (checkSum==0U) { checkSum = seedValue; randomSeed(seedValue); } \
+        shiftDistance = (uint8_t)random(1, 32); \
+    } else { \
+        shift_op(checkSum, shiftDistance); \
+    }
+
+static inline void rtNativeTestRShift(uint8_t index, uint32_t &checkSum) { 
+    PERF_RT_TEST_FUN_BODY(PERF_RT_NATIVE_RSHIFT)
+};
+
+static inline void rtOptimizedTestRShift(uint8_t index, uint32_t &checkSum) {
+    PERF_RT_TEST_FUN_BODY(PERF_RT_OPTIMIZED_RSHIFT)
+};
+
+static inline void rtNativeTestLShift(uint8_t index, uint32_t &checkSum) { 
+    PERF_RT_TEST_FUN_BODY(PERF_RT_NATIVE_LSHIFT)
+};
+
+static inline void rtOptimizedTestLShift(uint8_t index, uint32_t &checkSum) {
+    PERF_RT_TEST_FUN_BODY(PERF_RT_OPTIMIZED_LSHIFT)
+};
+
+#endif
+
+static void test_runtime_rshift_perf(void) {
+#if defined(AFS_USE_OPTIMIZED_SHIFTS) && defined(AFS_RUNTIME_API)
+    seedValue = rand();
+
+    auto comparison = compare_executiontime<uint8_t, uint32_t>(iters, start_index, end_index, step, rtNativeTestRShift, rtOptimizedTestRShift);
+    
+    MESSAGE_TIMERS(comparison.timeA.timer, comparison.timeB.timer);
+    TEST_ASSERT_EQUAL(comparison.timeA.result, comparison.timeB.result);
+
+    TEST_ASSERT_LESS_THAN(comparison.timeA.timer.duration_micros(), comparison.timeB.timer.duration_micros());
+#endif
+}
+
+static void test_runtime_lshift_perf(void) {
+#if defined(AFS_USE_OPTIMIZED_SHIFTS) && defined(AFS_RUNTIME_API)
+    seedValue = rand();
+
+    auto comparison = compare_executiontime<uint8_t, uint32_t>(iters, start_index, end_index, step, rtNativeTestLShift, rtOptimizedTestLShift);
+    
+    MESSAGE_TIMERS(comparison.timeA.timer, comparison.timeB.timer);
+    TEST_ASSERT_EQUAL(comparison.timeA.result, comparison.timeB.result);
+
+    TEST_ASSERT_LESS_THAN(comparison.timeA.timer.duration_micros(), comparison.timeB.timer.duration_micros());
+#endif
+}
 
 void setup()
 {
@@ -158,13 +229,15 @@ void setup()
     RUN_TEST(test_RShift);
     RUN_TEST(test_rshift_perf);
     RUN_TEST(test_lshift_perf);
+    RUN_TEST(test_runtime_rshift_perf);
+    RUN_TEST(test_runtime_lshift_perf);
     UNITY_END(); 
 
     // Tell SimAVR we are done
 #if defined(SIMULATOR)    
     cli();
     sleep_enable();
-    sleep_cpu();    
+    sleep_cpu();
 #endif    
 }
 

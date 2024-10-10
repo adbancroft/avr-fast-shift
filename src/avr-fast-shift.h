@@ -29,9 +29,9 @@
     
 /// @brief Preprocessor flag to turn on optimized shifts.
 /// If not set eternally, will be automatically set for GCC on AVR.
-#if !defined(USE_OPTIMIZED_SHIFTS)
+#if !defined(AFS_USE_OPTIMIZED_SHIFTS)
 #if (defined(__GNUC__) && defined(__AVR__)) || defined(DOXYGEN_DOCUMENTATION_BUILD)
-#define USE_OPTIMIZED_SHIFTS
+#define AFS_USE_OPTIMIZED_SHIFTS
 #endif
 #endif
 
@@ -43,7 +43,7 @@
 /// @return uint32_t a<<b
 template <uint8_t b> 
 static inline uint32_t lshift(uint32_t a) { 
-#if defined(USE_OPTIMIZED_SHIFTS)
+#if defined(AFS_USE_OPTIMIZED_SHIFTS)
     // The shifts below have been validated to produce performant code in GCC. 
     // Other shift amounts are either in a specialized template below (good) or are unvalidated (bad).
     static_assert(b==1 || b==2 || b==3 || b==8 || b==16 || b==24 || b==32,
@@ -52,7 +52,7 @@ static inline uint32_t lshift(uint32_t a) {
     return a << b; 
 }
 
-#if defined(USE_OPTIMIZED_SHIFTS)
+#if defined(AFS_USE_OPTIMIZED_SHIFTS)
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
@@ -344,7 +344,7 @@ uint32_t lshift<15U>(uint32_t a)
 /// @return uint32_t a>>b
 template <uint8_t b> 
 static inline uint32_t rshift(uint32_t a) { 
-#if defined(USE_OPTIMIZED_SHIFTS)
+#if defined(AFS_USE_OPTIMIZED_SHIFTS)
     // The shifts below have been validated to produce performant code in GCC. 
     // Other shift amounts are either in a specialized template below (good) or are unvalidated (bad).
     static_assert(b==1 || b==2 || b==8 || b==16 || b==24,
@@ -353,7 +353,7 @@ static inline uint32_t rshift(uint32_t a) {
     return a >> b; 
 }
 
-#if defined(USE_OPTIMIZED_SHIFTS)
+#if defined(AFS_USE_OPTIMIZED_SHIFTS)
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
@@ -661,6 +661,64 @@ uint32_t rshift<15U>(uint32_t a)
 
 #pragma GCC diagnostic pop
 
+#endif
+
+#if defined(AFS_USE_OPTIMIZED_SHIFTS) && defined(AFS_RUNTIME_API)
+
+static inline uint32_t rshift(uint32_t a, uint8_t b)
+{
+    switch (b)
+    {
+        case 0: return a;
+        case 1: return rshift<1U>(a);
+        case 2: return rshift<2U>(a);
+        case 3: return rshift<3U>(a);
+        case 4: return rshift<4U>(a);
+        case 5: return rshift<5U>(a);
+        case 6: return rshift<6U>(a);
+        case 7: return rshift<7U>(a);
+        case 8: return rshift<8U>(a);
+        case 9: return rshift<9U>(a);
+        case 10: return rshift<10U>(a);
+        case 11: return rshift<11U>(a);
+        case 12: return rshift<12U>(a);
+        case 13: return rshift<13U>(a);
+        case 14: return rshift<14U>(a);
+        case 15: return rshift<15U>(a);
+        //  Note recursion here.
+        default: return rshift(rshift<16>(a), (uint8_t)(b-UINT8_C(16)));
+    }
+}
+
+
+static inline uint32_t lshift(uint32_t a, uint8_t b)
+{
+    switch (b)
+    {
+        case 0: return a;
+        case 1: return lshift<1U>(a);
+        case 2: return lshift<2U>(a);
+        case 3: return lshift<3U>(a);
+        case 4: return lshift<4U>(a);
+        case 5: return lshift<5U>(a);
+        case 6: return lshift<6U>(a);
+        case 7: return lshift<7U>(a);
+        case 8: return lshift<8U>(a);
+        case 9: return lshift<9U>(a);
+        case 10: return lshift<10U>(a);
+        case 11: return lshift<11U>(a);
+        case 12: return lshift<12U>(a);
+        case 13: return lshift<13U>(a);
+        case 14: return lshift<14U>(a);
+        case 15: return lshift<15U>(a);
+        //  Note recursion here.
+        default: return lshift(lshift<16>(a), (uint8_t)(b-UINT8_C(16)));
+    }
+}
+
+#else
+static inline uint32_t rshift(uint32_t a, uint8_t b) { return a >> b; }
+static inline uint32_t lshift(uint32_t a, uint8_t b) { return a << b; }
 #endif
 
 ///@}
