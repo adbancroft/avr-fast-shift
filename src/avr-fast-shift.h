@@ -35,6 +35,15 @@
 #endif
 #endif
 
+template <uint8_t b> 
+static inline uint8_t lshift(uint8_t a) {
+    return (uint8_t)(a<<b);
+}
+template <uint8_t b> 
+static inline uint16_t lshift(uint16_t a) {
+    return (uint16_t)(a<<b);
+}
+
 #if defined(AFS_USE_OPTIMIZED_SHIFTS)
 
 #pragma GCC diagnostic push
@@ -330,6 +339,15 @@ static inline uint32_t lshift(uint32_t a) {
    return a << b; 
 }
 #endif
+
+template <uint8_t b> 
+static inline uint8_t rshift(uint8_t a) {
+    return (uint8_t)(a>>b);
+}
+template <uint8_t b> 
+static inline uint16_t rshift(uint16_t a) {
+    return (uint16_t)(a>>b);
+}
 
 #if defined(AFS_USE_OPTIMIZED_SHIFTS)
 

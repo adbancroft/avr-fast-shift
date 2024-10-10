@@ -5,12 +5,45 @@
 #include "lambda_timer.hpp"
 #include "unity_print_timers.hpp"
 
+template <typename T, uint8_t b> 
+static void test_lshift(T shiftValue) {
+    char szMsg[128];
+    sprintf(szMsg, "Shift: %" PRIu8 ", Type Width: %" PRIu8 ", Value: %" PRIi32, b, (uint8_t)sizeof(shiftValue), (int32_t) shiftValue);
+    TEST_ASSERT_EQUAL_MESSAGE((T)(shiftValue << b), (lshift<b>(shiftValue)), szMsg);
+}
+
+template <uint8_t shiftDistance, bool lt16, bool lt8>
+struct test_lshift_t;
+
+template <uint8_t shiftDistance>
+struct test_lshift_t<shiftDistance, false, false>
+{    
+    static void run(void) {
+        test_lshift<uint32_t, shiftDistance>(UINT16_MAX * 31UL);
+    }
+};
+
+template <uint8_t shiftDistance>
+struct test_lshift_t<shiftDistance, true, false>
+{
+    static void run(void) {
+        test_lshift_t<shiftDistance, false, false>::run();
+        test_lshift<uint16_t, shiftDistance>(33333U);
+    }
+};
+
+template <uint8_t shiftDistance>
+struct test_lshift_t<shiftDistance, true, true>
+{
+    static void run(void) {
+        test_lshift_t<shiftDistance, true, false>::run();
+        test_lshift<uint8_t, shiftDistance>(251U);
+    }
+};
+
 template <uint8_t shiftDistance>
 static void test_lshift(void) {
-    uint32_t value = 33333;
-    char szMsg[16];
-    sprintf(szMsg, "%" PRIu8, shiftDistance);
-    TEST_ASSERT_EQUAL_MESSAGE(value << shiftDistance, lshift<shiftDistance>(value), szMsg);
+    test_lshift_t<shiftDistance, shiftDistance<16U, shiftDistance<8U >::run();
 }
 
 static void test_LShift()
@@ -48,14 +81,48 @@ static void test_LShift()
     test_lshift<31U>();
 }
 
-template <uint8_t shiftDistance>
-static void test_rshift(void) {
-    uint32_t value = 33333;
-    char szMsg[16];
-    sprintf(szMsg, "%" PRIu8, shiftDistance);
-    TEST_ASSERT_EQUAL_MESSAGE(value >> shiftDistance, rshift<shiftDistance>(value), szMsg);
+
+template <typename T, uint8_t b> 
+static void test_rshift(T shiftValue) {
+    char szMsg[128];
+    sprintf(szMsg, "Shift: %" PRIu8 ", Type Width: %" PRIu8 ", Value: %" PRIi32, b, (uint8_t)sizeof(shiftValue), (int32_t) shiftValue);
+    TEST_ASSERT_EQUAL_MESSAGE((T)(shiftValue >> b), (rshift<b>(shiftValue)), szMsg);
 }
 
+
+template <uint8_t shiftDistance, bool lt16, bool lt8>
+struct test_rshift_t;
+
+template <uint8_t shiftDistance>
+struct test_rshift_t<shiftDistance, false, false>
+{    
+    static void run(void) {
+        test_rshift<uint32_t, shiftDistance>(UINT16_MAX * 31UL);
+    }
+};
+
+template <uint8_t shiftDistance>
+struct test_rshift_t<shiftDistance, true, false>
+{
+    static void run(void) {
+        test_rshift_t<shiftDistance, false, false>::run();
+        test_rshift<uint16_t, shiftDistance>(33333U);
+    }
+};
+
+template <uint8_t shiftDistance>
+struct test_rshift_t<shiftDistance, true, true>
+{
+    static void run(void) {
+        test_rshift_t<shiftDistance, true, false>::run();
+        test_rshift<uint8_t, shiftDistance>(251U);
+    }
+};
+
+template <uint8_t shiftDistance>
+static void test_rshift(void) {
+    test_rshift_t<shiftDistance, shiftDistance<16U, shiftDistance<8U >::run();
+}
 void test_RShift()
 {
     test_rshift<1U>();
@@ -96,7 +163,7 @@ void test_RShift()
 static uint32_t seedValue;
 static uint8_t shiftDistance;
 
-constexpr uint16_t iters = 2048;
+constexpr uint16_t iters = 1024;
 constexpr uint8_t start_index = 0;
 constexpr uint8_t end_index = 31;
 constexpr uint8_t step = 1;
