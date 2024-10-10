@@ -35,23 +35,6 @@
 #endif
 #endif
 
-
-/// @brief Bitwise left shift - generic, unoptimized, case 
-/// 
-/// @tparam b number of bits to shift by
-/// @param a value to shift
-/// @return uint32_t a<<b
-template <uint8_t b> 
-static inline uint32_t lshift(uint32_t a) { 
-#if defined(AFS_USE_OPTIMIZED_SHIFTS)
-    // The shifts below have been validated to produce performant code in GCC. 
-    // Other shift amounts are either in a specialized template below (good) or are unvalidated (bad).
-    static_assert(b==1 || b==2 || b==3 || b==8 || b==16 || b==24 || b==32,
-                  "Unvalidated shift - confirm gcc produces performant code");
-#endif
-    return a << b; 
-}
-
 #if defined(AFS_USE_OPTIMIZED_SHIFTS)
 
 #pragma GCC diagnostic push
@@ -62,9 +45,35 @@ static inline uint32_t lshift(uint32_t a) {
 /// 
 /// @param a value to shift
 /// @return uint32_t a<<b
-template <>
-uint32_t lshift<4U>(uint32_t a)
-{
+template <uint8_t b> 
+static inline uint32_t lshift(uint32_t a) {
+    // Template is specialized for shifts of 1-16 bits below.
+    static_assert(b>16, "Missing template specialization");
+    // This is the default, for shifts of 17 or more bits.
+    // Shift by 16, then by the remaining amount.
+    return lshift<b-16U>(lshift<16>(a));
+}
+
+template <> inline uint32_t lshift<1U>(uint32_t a) {
+    return a << 1U;
+}
+template <> inline uint32_t lshift<2U>(uint32_t a) {
+    return a << 2U;
+}
+template <> inline uint32_t lshift<3U>(uint32_t a) {
+    return a << 3U;
+}
+template <> inline uint32_t lshift<8U>(uint32_t a) {
+    return a << 8U;
+}
+template <> inline uint32_t lshift<16U>(uint32_t a) {
+    return a << 16U;
+}
+template <> inline uint32_t lshift<24U>(uint32_t a) {
+    return a << 24U;
+}
+
+template <> inline uint32_t lshift<4U>(uint32_t a) {
     asm(
         "swap    %D0\n"
         "andi    %D0, 240\n"
@@ -88,9 +97,7 @@ uint32_t lshift<4U>(uint32_t a)
     return a;
 }
 
-template <>
-uint32_t lshift<5U>(uint32_t a)
-{
+template <> inline uint32_t lshift<5U>(uint32_t a) {
     asm(
         "swap    %D0\n"
         "andi    %D0, 240\n"
@@ -118,9 +125,7 @@ uint32_t lshift<5U>(uint32_t a)
     return a;
 }
 
-template <>
-uint32_t lshift<6U>(uint32_t a)
-{
+template <> inline uint32_t lshift<6U>(uint32_t a) {
     asm(
         "lsr     %D0\n"
         "ror     %C0\n"
@@ -145,9 +150,7 @@ uint32_t lshift<6U>(uint32_t a)
     return a;
 }
 
-template <>
-uint32_t lshift<7U>(uint32_t a)
-{
+template <> inline uint32_t lshift<7U>(uint32_t a) {
     asm(
         "lsr     %D0\n"
         "ror     %C0\n"
@@ -167,9 +170,7 @@ uint32_t lshift<7U>(uint32_t a)
     return a;
 }
 
-template <>
-uint32_t lshift<9U>(uint32_t a)
-{
+template <> inline uint32_t lshift<9U>(uint32_t a) {
     asm(
         "lsl     %A0\n"
         "rol     %B0\n"
@@ -186,9 +187,7 @@ uint32_t lshift<9U>(uint32_t a)
     return a;
 }
 
-template <>
-uint32_t lshift<10U>(uint32_t a)
-{
+template <> inline uint32_t lshift<10U>(uint32_t a) {
     asm(
         "lsl     %A0\n"
         "rol     %B0\n"
@@ -208,9 +207,7 @@ uint32_t lshift<10U>(uint32_t a)
     return a;
 }
 
-template <>
-uint32_t lshift<11U>(uint32_t a)
-{
+template <> inline uint32_t lshift<11U>(uint32_t a) {
     asm(
         "lsl     %A0\n"
         "rol     %B0\n"
@@ -233,9 +230,7 @@ uint32_t lshift<11U>(uint32_t a)
     return a;
 }
 
-template <>
-uint32_t lshift<12U>(uint32_t a)
-{
+template <> inline uint32_t lshift<12U>(uint32_t a) {
     asm(
         "swap    %C0\n"
         "andi    %C0, 240\n"
@@ -259,9 +254,7 @@ uint32_t lshift<12U>(uint32_t a)
     return a;
 }
 
-template <>
-uint32_t lshift<13U>(uint32_t a)
-{
+template <> inline uint32_t lshift<13U>(uint32_t a) {
     asm(
         "swap    %C0\n"
         "andi    %C0, 240\n"
@@ -288,9 +281,7 @@ uint32_t lshift<13U>(uint32_t a)
     return a;
 }
 
-template <>
-uint32_t lshift<14U>(uint32_t a)
-{
+template <> inline uint32_t lshift<14U>(uint32_t a) {
     asm(
         "movw    r18, %A0\n"
         "lsr     %C0\n"
@@ -312,9 +303,7 @@ uint32_t lshift<14U>(uint32_t a)
     return a;
 }
 
-template <>
-uint32_t lshift<15U>(uint32_t a)
-{
+template <> inline uint32_t lshift<15U>(uint32_t a) {
     asm(
         "movw    r18, %A0\n"
         "lsr     %C0\n"
@@ -335,23 +324,12 @@ uint32_t lshift<15U>(uint32_t a)
 
 #pragma GCC diagnostic pop
 
-#endif
-
-/// @brief Bitwise right shift - generic, unoptimized, case 
-/// 
-/// @tparam b number of bits to shift by
-/// @param a value to shift
-/// @return uint32_t a>>b
+#else
 template <uint8_t b> 
-static inline uint32_t rshift(uint32_t a) { 
-#if defined(AFS_USE_OPTIMIZED_SHIFTS)
-    // The shifts below have been validated to produce performant code in GCC. 
-    // Other shift amounts are either in a specialized template below (good) or are unvalidated (bad).
-    static_assert(b==1 || b==2 || b==8 || b==16 || b==24,
-                  "Unvalidated shift - confirm gcc produces performant code");
-#endif
-    return a >> b; 
+static inline uint32_t lshift(uint32_t a) { 
+   return a << b; 
 }
+#endif
 
 #if defined(AFS_USE_OPTIMIZED_SHIFTS)
 
@@ -362,10 +340,33 @@ static inline uint32_t rshift(uint32_t a) {
 /// @brief uint32_t bitwise right shift optimised for the specified shift distance  
 /// 
 /// @param a value to shift
-/// @return uint32_t a>>b
-template <>
-uint32_t rshift<3U>(uint32_t a)
-{
+/// @return uint32_t a<<b
+template <uint8_t b> 
+static inline uint32_t rshift(uint32_t a) {
+    // Template is specialized for shifts of 1-16 bits below.
+    static_assert(b>16, "Missing template specialization");
+    // This is the default, for shifts of 17 or more bits.
+    // Shift by 16, then by the remaining amount.
+    return rshift<b-16U>(rshift<16>(a));
+}
+
+template <> inline uint32_t rshift<1U>(uint32_t a) {
+    return a >> 1U;
+}
+template <> inline uint32_t rshift<2U>(uint32_t a) {
+    return a >> 2U;
+}
+template <> inline uint32_t rshift<8U>(uint32_t a) {
+    return a >> 8U;
+}
+template <> inline uint32_t rshift<16U>(uint32_t a) {
+    return a >> 16U;
+}
+template <> inline uint32_t rshift<24U>(uint32_t a) {
+    return a >> 24U;
+}
+
+template <> inline uint32_t rshift<3U>(uint32_t a) {
     asm(
         "lsr     %D0\n"
         "ror     %C0\n"
@@ -387,35 +388,7 @@ uint32_t rshift<3U>(uint32_t a)
     return a;
 }
 
-template <>
-uint32_t rshift<4U>(uint32_t a)
-{
-    asm(
-        "swap    %A0\n"
-        "andi    %A0, 15\n"
-        "swap    %B0\n"
-        "eor     %A0, %B0\n"
-        "andi    %B0, 15\n"
-        "eor     %A0, %B0\n"
-        "swap    %C0\n"
-        "eor     %B0, %C0\n"
-        "andi    %C0, 15\n"
-        "eor     %B0, %C0\n"
-        "swap    %D0\n"
-        "eor     %C0, %D0\n"
-        "andi    %D0, 15\n"
-        "eor     %C0, %D0\n"
-        : "=d" (a) 
-        : "0" (a) 
-        : 
-    );
-
-    return a;
-}
-
-template <>
-uint32_t rshift<5U>(uint32_t a)
-{
+template <> inline uint32_t rshift<4U>(uint32_t a) {
     asm(
         "swap    %A0\n"
         "andi    %A0, 15\n"
@@ -431,6 +404,30 @@ uint32_t rshift<5U>(uint32_t a)
         "eor     %C0, %D0\n"
         "andi    %D0, 15\n"
         "eor     %C0, %D0\n"
+        : "=d" (a) 
+        : "0" (a) 
+        : 
+    );
+
+    return a;
+}
+
+template <> inline uint32_t rshift<5U>(uint32_t a) {
+    asm(
+        "swap    %A0\n"
+        "andi    %A0, 15\n"
+        "swap    %B0\n"
+        "eor     %A0, %B0\n"
+        "andi    %B0, 15\n"
+        "eor     %A0, %B0\n"
+        "swap    %C0\n"
+        "eor     %B0, %C0\n"
+        "andi    %C0, 15\n"
+        "eor     %B0, %C0\n"
+        "swap    %D0\n"
+        "eor     %C0, %D0\n"
+        "andi    %D0, 15\n"
+        "eor     %C0, %D0\n"
         "lsr     %D0\n"
         "ror     %C0\n"
         "ror     %B0\n"
@@ -443,9 +440,7 @@ uint32_t rshift<5U>(uint32_t a)
     return a;
 }
 
-template <>
-uint32_t rshift<6U>(uint32_t a)
-{
+template <> inline uint32_t rshift<6U>(uint32_t a) {
     asm(
         "lsl     %A0\n"
         "rol     %B0\n"
@@ -470,9 +465,7 @@ uint32_t rshift<6U>(uint32_t a)
     return a;
 }
 
-template <>
-uint32_t rshift<7U>(uint32_t a)
-{
+template <> inline uint32_t rshift<7U>(uint32_t a) {
     asm(
         "lsl     %A0\n"
         "rol     %B0\n"
@@ -492,9 +485,7 @@ uint32_t rshift<7U>(uint32_t a)
     return a;
 }
 
-template <>
-uint32_t rshift<9U>(uint32_t a)
-{
+template <> inline uint32_t rshift<9U>(uint32_t a) {
     asm(
         "lsr     %D0\n"
         "ror     %C0\n"
@@ -511,9 +502,7 @@ uint32_t rshift<9U>(uint32_t a)
     return a;
 }
 
-template <>
-uint32_t rshift<10U>(uint32_t a)
-{
+template <> inline uint32_t rshift<10U>(uint32_t a) {
     asm(
         "lsr     %D0\n"
         "ror     %C0\n"
@@ -533,9 +522,7 @@ uint32_t rshift<10U>(uint32_t a)
     return a;
 }
 
-template <>
-uint32_t rshift<11U>(uint32_t a)
-{
+template <> inline uint32_t rshift<11U>(uint32_t a) {
     asm(
         "lsr     %D0\n"
         "ror     %C0\n"
@@ -558,9 +545,7 @@ uint32_t rshift<11U>(uint32_t a)
     return a;
 }
 
-template <>
-uint32_t rshift<12U>(uint32_t a)
-{
+template <> inline uint32_t rshift<12U>(uint32_t a) {
     asm(
         "swap    %B0\n"
         "andi    %B0, 15\n"
@@ -584,9 +569,7 @@ uint32_t rshift<12U>(uint32_t a)
     return a;
 }
 
-template <>
-uint32_t rshift<13U>(uint32_t a)
-{
+template <> inline uint32_t rshift<13U>(uint32_t a) {
     asm(
         "swap    %B0\n"
         "andi    %B0, 15\n"
@@ -613,9 +596,7 @@ uint32_t rshift<13U>(uint32_t a)
     return a;
 }
 
-template <>
-uint32_t rshift<14U>(uint32_t a)
-{
+template <> inline uint32_t rshift<14U>(uint32_t a) {
     asm(
         "movw    r18, %C0\n"
         "lsl     %B0\n"
@@ -637,9 +618,7 @@ uint32_t rshift<14U>(uint32_t a)
     return a;
 }
 
-template <>
-uint32_t rshift<15U>(uint32_t a)
-{
+template <> inline uint32_t rshift<15U>(uint32_t a) {
     asm(
         "movw    r18, %C0\n"
         "lsl     %B0\n"
@@ -661,6 +640,11 @@ uint32_t rshift<15U>(uint32_t a)
 
 #pragma GCC diagnostic pop
 
+#else
+template <uint8_t b> 
+static inline uint32_t rshift(uint32_t a) { 
+    return a >> b; 
+}
 #endif
 
 #if defined(AFS_USE_OPTIMIZED_SHIFTS) && defined(AFS_RUNTIME_API)

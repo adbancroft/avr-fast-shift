@@ -30,6 +30,22 @@ static void test_LShift()
     test_lshift<13U>();
     test_lshift<14U>();
     test_lshift<15U>();
+    test_lshift<16U>();
+    test_lshift<17U>();
+    test_lshift<18U>();
+    test_lshift<19U>();
+    test_lshift<20U>();
+    test_lshift<21U>();
+    test_lshift<22U>();
+    test_lshift<23U>();
+    test_lshift<24U>();
+    test_lshift<25U>();
+    test_lshift<26U>();
+    test_lshift<27U>();
+    test_lshift<28U>();
+    test_lshift<29U>();
+    test_lshift<30U>();
+    test_lshift<31U>();
 }
 
 template <uint8_t shiftDistance>
@@ -57,6 +73,22 @@ void test_RShift()
     test_rshift<13U>();
     test_rshift<14U>();
     test_rshift<15U>();
+    test_rshift<16U>();
+    test_rshift<17U>();
+    test_rshift<18U>();
+    test_rshift<19U>();
+    test_rshift<20U>();
+    test_rshift<21U>();
+    test_rshift<22U>();
+    test_rshift<23U>();
+    test_rshift<24U>();
+    test_rshift<25U>();
+    test_rshift<26U>();
+    test_rshift<27U>();
+    test_rshift<28U>();
+    test_rshift<29U>();
+    test_rshift<30U>();
+    test_rshift<31U>();
 }
 
 #if defined(AFS_USE_OPTIMIZED_SHIFTS)
@@ -64,9 +96,9 @@ void test_RShift()
 static uint32_t seedValue;
 static uint8_t shiftDistance;
 
-constexpr uint16_t iters = 1024;
+constexpr uint16_t iters = 2048;
 constexpr uint8_t start_index = 0;
-constexpr uint8_t end_index = 16;
+constexpr uint8_t end_index = 31;
 constexpr uint8_t step = 1;
 
 // The macros below are used to ensure the performance test functions
@@ -87,7 +119,7 @@ constexpr uint8_t step = 1;
 #define PERF_TEST_FUN_BODY(shift_op) \
     if (index==0U) { \
         if (checkSum==0U) { checkSum = seedValue; randomSeed(seedValue); } \
-        shiftDistance = (uint8_t)random(1, 16); \
+        shiftDistance = (uint8_t)random(4, 32); \
     } else { \
         shift_op(shiftDistance, 4U) \
         shift_op(shiftDistance, 5U) \
@@ -100,6 +132,22 @@ constexpr uint8_t step = 1;
         shift_op(shiftDistance, 13U) \
         shift_op(shiftDistance, 14U) \
         shift_op(shiftDistance, 15U) \
+        shift_op(shiftDistance, 16U) \
+        shift_op(shiftDistance, 17U) \
+        shift_op(shiftDistance, 18U) \
+        shift_op(shiftDistance, 19U) \
+        shift_op(shiftDistance, 20U) \
+        shift_op(shiftDistance, 21U) \
+        shift_op(shiftDistance, 22U) \
+        shift_op(shiftDistance, 23U) \
+        shift_op(shiftDistance, 24U) \
+        shift_op(shiftDistance, 25U) \
+        shift_op(shiftDistance, 26U) \
+        shift_op(shiftDistance, 27U) \
+        shift_op(shiftDistance, 28U) \
+        shift_op(shiftDistance, 29U) \
+        shift_op(shiftDistance, 30U) \
+        shift_op(shiftDistance, 31U) \
     }
 
 static void nativeTestRShift(uint8_t index, uint32_t &checkSum) { 
