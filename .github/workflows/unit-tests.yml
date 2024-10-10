@@ -40,10 +40,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install --upgrade platformio
-        sudo apt update
-        sudo apt-get install -y simavr
 
     - name: Run Unit Tests
-      # shell: pwsh
       run: | 
-        pio test -v -e megaatmega2560-GitHubUnitTest-O3
+        pio test -v -e megaatmega2560-O3-sim
