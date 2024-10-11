@@ -35,25 +35,16 @@
 #endif
 #endif
 
-template <uint8_t b> 
-static inline uint8_t lshift(uint8_t a) {
-    return (uint8_t)(a<<b);
-}
-template <uint8_t b> 
-static inline uint16_t lshift(uint16_t a) {
-    return (uint16_t)(a<<b);
-}
-
 #if defined(AFS_USE_OPTIMIZED_SHIFTS)
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
 
 /// @{
-/// @brief uint32_t bitwise left shift optimised for the specified shift distance  
-/// 
+/// @brief bitwise left shift optimised for the specified shift distance
+/// @tparam b Number of bits to shift
 /// @param a value to shift
-/// @return uint32_t a<<b
+/// @return a<<b
 template <uint8_t b> 
 static inline uint32_t lshift(uint32_t a) {
     // Template is specialized for shifts of 1-16 bits below.
@@ -340,25 +331,16 @@ static inline uint32_t lshift(uint32_t a) {
 }
 #endif
 
-template <uint8_t b> 
-static inline uint8_t rshift(uint8_t a) {
-    return (uint8_t)(a>>b);
-}
-template <uint8_t b> 
-static inline uint16_t rshift(uint16_t a) {
-    return (uint16_t)(a>>b);
-}
-
 #if defined(AFS_USE_OPTIMIZED_SHIFTS)
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
 
 /// @{
-/// @brief uint32_t bitwise right shift optimised for the specified shift distance  
-/// 
+/// @brief bitwise right shift optimised for the specified shift distance
+/// @tparam b Number of bits to shift
 /// @param a value to shift
-/// @return uint32_t a<<b
+/// @return a<<b
 template <uint8_t b> 
 static inline uint32_t rshift(uint32_t a) {
     // Template is specialized for shifts of 1-16 bits below.
@@ -665,8 +647,34 @@ static inline uint32_t rshift(uint32_t a) {
 }
 #endif
 
-#if defined(AFS_USE_OPTIMIZED_SHIFTS) && defined(AFS_RUNTIME_API)
+// These overloads are provided for completeness, but are not optimized.
+// They are primarily to support template code that needs to apply shift
+// to generic integral types
+template <uint8_t b> 
+static inline uint8_t lshift(uint8_t a) {
+    return (uint8_t)(a<<b);
+}
+template <uint8_t b> 
+static inline uint16_t lshift(uint16_t a) {
+    return (uint16_t)(a<<b);
+}
+template <uint8_t b> 
+static inline uint8_t rshift(uint8_t a) {
+    return (uint8_t)(a>>b);
+}
+template <uint8_t b> 
+static inline uint16_t rshift(uint16_t a) {
+    return (uint16_t)(a>>b);
+}
 
+#if defined(AFS_RUNTIME_API)
+
+#if defined(AFS_USE_OPTIMIZED_SHIFTS) 
+
+/// @brief bitwise right shift optimised for the specified shift distance
+/// @param a value to shift
+/// @param b Number of bits to shift
+/// @return a>>b 
 static inline uint32_t rshift(uint32_t a, uint8_t b)
 {
     switch (b)
@@ -692,7 +700,10 @@ static inline uint32_t rshift(uint32_t a, uint8_t b)
     }
 }
 
-
+/// @brief bitwise left shift optimised for the specified shift distance
+/// @param a value to shift
+/// @param b Number of bits to shift
+/// @return a<<b
 static inline uint32_t lshift(uint32_t a, uint8_t b)
 {
     switch (b)
@@ -723,4 +734,21 @@ static inline uint32_t rshift(uint32_t a, uint8_t b) { return a >> b; }
 static inline uint32_t lshift(uint32_t a, uint8_t b) { return a << b; }
 #endif
 
+// These overloads are provided for completeness, but are not optimized.
+// They are primarily to support template code that needs to apply shift
+// to generic integral types
+static inline uint8_t rshift(uint8_t a, uint8_t b) {
+    return (uint8_t)(a>>b);
+}
+static inline uint16_t rshift(uint16_t a, uint8_t b) {
+    return (uint16_t)(a>>b);
+}
+static inline uint8_t lshift(uint8_t a, uint8_t b) {
+    return (uint8_t)(a<<b);
+}
+static inline uint16_t lshift(uint16_t a, uint8_t b) {
+    return (uint16_t)(a<<b);
+}
+
+#endif
 ///@}
