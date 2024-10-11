@@ -9,7 +9,7 @@ As of AVR-GCC 14.2.0, the code produced for unsigned 32-bit shifts with a *compi
 
     rpmDelta = (toothDeltaV << 10) / (6 * toothDeltaT);
 
-The functions provided here implement optimised left and right shifting of `uint32_t` up to 16 places.
+The functions provided here implement optimised left and right shifting of `uint32_t` up to 31 places.
 
 On a physical AtMega2560, up to: 
 * 35% increase in right shift performance
