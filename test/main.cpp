@@ -20,6 +20,7 @@ struct test_lshift_t<shiftDistance, false, false>
 {    
     static void run(void) {
         test_lshift<uint32_t, shiftDistance>(UINT16_MAX * 31UL);
+        test_lshift<int32_t, shiftDistance>(UINT16_MAX * 31UL);
     }
 };
 
@@ -29,6 +30,7 @@ struct test_lshift_t<shiftDistance, true, false>
     static void run(void) {
         test_lshift_t<shiftDistance, false, false>::run();
         test_lshift<uint16_t, shiftDistance>(33333U);
+        test_lshift<int16_t, shiftDistance>(33333U);
     }
 };
 
@@ -38,6 +40,7 @@ struct test_lshift_t<shiftDistance, true, true>
     static void run(void) {
         test_lshift_t<shiftDistance, true, false>::run();
         test_lshift<uint8_t, shiftDistance>(251U);
+        test_lshift<int8_t, shiftDistance>(251U);
     }
 };
 
@@ -98,6 +101,7 @@ struct test_rshift_t<shiftDistance, false, false>
 {    
     static void run(void) {
         test_rshift<uint32_t, shiftDistance>(UINT16_MAX * 31UL);
+        test_rshift<int32_t, shiftDistance>(UINT16_MAX * 31UL);
     }
 };
 
@@ -107,6 +111,7 @@ struct test_rshift_t<shiftDistance, true, false>
     static void run(void) {
         test_rshift_t<shiftDistance, false, false>::run();
         test_rshift<uint16_t, shiftDistance>(33333U);
+        test_rshift<int16_t, shiftDistance>(33333U);
     }
 };
 
@@ -116,6 +121,7 @@ struct test_rshift_t<shiftDistance, true, true>
     static void run(void) {
         test_rshift_t<shiftDistance, true, false>::run();
         test_rshift<uint8_t, shiftDistance>(251U);
+        test_rshift<int8_t, shiftDistance>(251U);
     }
 };
 
@@ -217,29 +223,34 @@ constexpr uint8_t step = 1;
         shift_op(shiftDistance, 31U) \
     }
 
-static void nativeTestRShift(uint8_t index, uint32_t &checkSum) { 
+template <typename TCheckSum>
+static void nativeTestRShift(uint8_t index, TCheckSum &checkSum) { 
     PERF_TEST_FUN_BODY(PERF_NATIVE_RSHIFT)
 };
 
-static void optimizedTestRShift(uint8_t index, uint32_t &checkSum) {
+template <typename TCheckSum>
+static void optimizedTestRShift(uint8_t index, TCheckSum &checkSum) {
     PERF_TEST_FUN_BODY(PERF_OPTIMIZED_RSHIFT)
 };
 
-static void nativeTestLShift(uint8_t index, uint32_t &checkSum) { 
+template <typename TCheckSum>
+static void nativeTestLShift(uint8_t index, TCheckSum &checkSum) { 
     PERF_TEST_FUN_BODY(PERF_NATIVE_LSHIFT)
 };
 
-static void optimizedTestLShift(uint8_t index, uint32_t &checkSum) {
+template <typename TCheckSum>
+static void optimizedTestLShift(uint8_t index, TCheckSum &checkSum) {
     PERF_TEST_FUN_BODY(PERF_OPTIMIZED_LSHIFT)
 };
 
 #endif 
 
+template <typename T>
 static void test_rshift_perf(void) {
 #if defined(AFS_USE_OPTIMIZED_SHIFTS)
     seedValue = rand();
 
-    auto comparison = compare_executiontime<uint8_t, uint32_t>(iters, start_index, end_index, step, nativeTestRShift, optimizedTestRShift);
+    auto comparison = compare_executiontime<uint8_t, T>(iters, start_index, end_index, step, nativeTestRShift<T>, optimizedTestRShift<T>);
     
     MESSAGE_TIMERS(comparison.timeA.timer, comparison.timeB.timer);
     TEST_ASSERT_EQUAL(comparison.timeA.result, comparison.timeB.result);
@@ -248,18 +259,34 @@ static void test_rshift_perf(void) {
 #endif
 }
 
+static void test_rshift_u32_perf(void) {
+    test_rshift_perf<uint32_t>();
+}
 
+static void test_rshift_s32_perf(void) {
+    test_rshift_perf<int32_t>();
+}
+
+template <typename T>
 static void test_lshift_perf(void) {
 #if defined(AFS_USE_OPTIMIZED_SHIFTS)
     seedValue = rand();
 
-    auto comparison = compare_executiontime<uint8_t, uint32_t>(iters, start_index, end_index, step, nativeTestLShift, optimizedTestLShift);
+    auto comparison = compare_executiontime<uint8_t, T>(iters, start_index, end_index, step, nativeTestLShift<T>, optimizedTestLShift<T>);
     
     MESSAGE_TIMERS(comparison.timeA.timer, comparison.timeB.timer);
     TEST_ASSERT_EQUAL(comparison.timeA.result, comparison.timeB.result);
 
     TEST_ASSERT_LESS_THAN(comparison.timeA.timer.duration_micros(), comparison.timeB.timer.duration_micros());
 #endif
+}
+
+static void test_lshift_u32_perf(void) {
+    test_lshift_perf<uint32_t>();
+}
+
+static void test_lshift_s32_perf(void) {
+    test_lshift_perf<int32_t>();
 }
 
 // The macros below are used to ensure the performance test functions
@@ -285,29 +312,34 @@ static void test_lshift_perf(void) {
         shift_op(checkSum, shiftDistance); \
     }
 
-static inline void rtNativeTestRShift(uint8_t index, uint32_t &checkSum) { 
+template <typename TCheckSum>
+static inline void rtNativeTestRShift(uint8_t index, TCheckSum &checkSum) { 
     PERF_RT_TEST_FUN_BODY(PERF_RT_NATIVE_RSHIFT)
 };
 
-static inline void rtOptimizedTestRShift(uint8_t index, uint32_t &checkSum) {
+template <typename TCheckSum>
+static inline void rtOptimizedTestRShift(uint8_t index, TCheckSum &checkSum) {
     PERF_RT_TEST_FUN_BODY(PERF_RT_OPTIMIZED_RSHIFT)
 };
 
-static inline void rtNativeTestLShift(uint8_t index, uint32_t &checkSum) { 
+template <typename TCheckSum>
+static inline void rtNativeTestLShift(uint8_t index, TCheckSum &checkSum) { 
     PERF_RT_TEST_FUN_BODY(PERF_RT_NATIVE_LSHIFT)
 };
 
-static inline void rtOptimizedTestLShift(uint8_t index, uint32_t &checkSum) {
+template <typename TCheckSum>
+static inline void rtOptimizedTestLShift(uint8_t index, TCheckSum &checkSum) {
     PERF_RT_TEST_FUN_BODY(PERF_RT_OPTIMIZED_LSHIFT)
 };
 
 #endif
 
+template <typename T>
 static void test_runtime_rshift_perf(void) {
 #if defined(AFS_USE_OPTIMIZED_SHIFTS) && defined(AFS_RUNTIME_API)
     seedValue = rand();
 
-    auto comparison = compare_executiontime<uint8_t, uint32_t>(iters, start_index, end_index, step, rtNativeTestRShift, rtOptimizedTestRShift);
+    auto comparison = compare_executiontime<uint8_t, T>(iters, start_index, end_index, step, rtNativeTestRShift<T>, rtOptimizedTestRShift<T>);
     
     MESSAGE_TIMERS(comparison.timeA.timer, comparison.timeB.timer);
     TEST_ASSERT_EQUAL(comparison.timeA.result, comparison.timeB.result);
@@ -316,17 +348,34 @@ static void test_runtime_rshift_perf(void) {
 #endif
 }
 
+static void test_runtime_rshift_u32_perf(void) {
+    test_runtime_rshift_perf<uint32_t>();
+}
+
+static void test_runtime_rshift_s32_perf(void) {
+    test_runtime_rshift_perf<int32_t>();
+}
+
+template <typename T>
 static void test_runtime_lshift_perf(void) {
 #if defined(AFS_USE_OPTIMIZED_SHIFTS) && defined(AFS_RUNTIME_API)
     seedValue = rand();
 
-    auto comparison = compare_executiontime<uint8_t, uint32_t>(iters, start_index, end_index, step, rtNativeTestLShift, rtOptimizedTestLShift);
+    auto comparison = compare_executiontime<uint8_t, T>(iters, start_index, end_index, step, rtNativeTestLShift<T>, rtOptimizedTestLShift<T>);
     
     MESSAGE_TIMERS(comparison.timeA.timer, comparison.timeB.timer);
     TEST_ASSERT_EQUAL(comparison.timeA.result, comparison.timeB.result);
 
     TEST_ASSERT_LESS_THAN(comparison.timeA.timer.duration_micros(), comparison.timeB.timer.duration_micros());
 #endif
+}
+
+static void test_runtime_lshift_u32_perf(void) {
+    test_runtime_lshift_perf<uint32_t>();
+}
+
+static void test_runtime_lshift_s32_perf(void) {
+    test_runtime_lshift_perf<int32_t>();
 }
 
 void setup()
@@ -342,10 +391,14 @@ void setup()
     UNITY_BEGIN(); 
     RUN_TEST(test_LShift);
     RUN_TEST(test_RShift);
-    RUN_TEST(test_rshift_perf);
-    RUN_TEST(test_lshift_perf);
-    RUN_TEST(test_runtime_rshift_perf);
-    RUN_TEST(test_runtime_lshift_perf);
+    RUN_TEST(test_rshift_u32_perf);
+    RUN_TEST(test_lshift_u32_perf);
+    RUN_TEST(test_rshift_s32_perf);
+    RUN_TEST(test_lshift_s32_perf);
+    RUN_TEST(test_runtime_rshift_u32_perf);
+    RUN_TEST(test_runtime_lshift_u32_perf);
+    RUN_TEST(test_runtime_rshift_s32_perf);
+    RUN_TEST(test_runtime_lshift_s32_perf);
     UNITY_END(); 
 
     // Tell SimAVR we are done
