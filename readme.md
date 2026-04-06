@@ -5,11 +5,11 @@
 
 # avr-fast-shift: optimized 32-bit shifting for avr-gcc
 
-As of AVR-GCC 14.2.0, the code produced for unsigned 32-bit shifts with a *compile time shift distance* is very poor when using -O2 or -O3. E.g.
+As of AVR-GCC 14.2.0, the code produced for 32-bit shifts with a *compile time shift distance* is very poor when using -O2 or -O3. E.g.
 
     rpmDelta = (toothDeltaV << 10) / (6 * toothDeltaT);
 
-The functions provided here implement optimised left and right shifting of `uint32_t` up to 31 places.
+The functions provided here implement optimised left and right shifting of `uint32_t` and `int32_t` up to 31 places.
 
 On a physical AtMega2560, up to: 
 * 35% increase in right shift performance
